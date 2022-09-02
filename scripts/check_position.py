@@ -1,18 +1,20 @@
 #!/usr/bin/env python
+# >>> import sys; sys.version
+# '2.7.17 (default, Jul  1 2022, 15:56:32) \n[GCC 7.5.0]'
 
 
 import rospy
-from test_srv.srv import CheckPos, CheckPosResponse
+from drone_position.srv import CheckPos, CheckPosResponse
 from nav_msgs.msg import Odometry
 from gazebo_msgs.srv import DeleteModel, DeleteModelResponse
 """
 Define of msg/srv
 
-CheckPos:
+- CheckPos:
     string request
     ---
     bool response
-Odometry:
+- Odometry:
     geometry_msgs/PoseWithConvariance pose
         geometry_msgs/Pose pose
             geometry_msgs/Point position
@@ -22,7 +24,7 @@ Odometry:
         float64[36] convariance
     geometry_msgs/TwistWithConvariance twist
         ...
-DeleteModel:
+- DeleteModel:
     string model_name
     ---
     bool success
@@ -31,6 +33,12 @@ DeleteModel:
 
 
 def main():
+    # Name used by ROS (service, topic)
+    check_position = 'check_position'
+    mavros_grobal_position_local = '/mavros/global_position/local'
+    gazebo_delete_model = '/gazebo/delete_model'
+
+    # Create instance and register object(prize)
     server_funcs = SrvFuncs()
     server_funcs.position = dict(
         box1 = (1.5024, 3.92435),
@@ -40,22 +48,21 @@ def main():
     )
 
     # Create node
-    rospy.init_node('check_position_server')
+    rospy.init_node('check_position_server', anonymous = True)
 
     # Create service server
-    rospy.loginfo('Creating service server, please wait a minute...')
-    rospy.Service('check_position', CheckPos, server_funcs.server_callback)
+    rospy.loginfo('Creating service server({}), please wait a minute...'.format(check_position))
+    rospy.Service(check_position, CheckPos, server_funcs.server_callback)
     # Subscribe to /mavros/global_position/local (for get drone position)
-    rospy.loginfo('Subscribing to "/mavros/global_position/local", please wait a minute...')
-    rospy.Subscriber('/mavros/global_position/local', Odometry, server_funcs.update_drone_position)
+    rospy.loginfo('Create subscriber for {}, please wait a minute...'.format(mavros_grobal_position_local))
+    rospy.Subscriber(mavros_grobal_position_local, Odometry, server_funcs.update_drone_position)
     # Create client to /gazebo/delete_model (for delete object from gazebo)
-    rospy.loginfo('Creating client to "/gazebo/delete_model", please wait a minute...')
-    rospy.wait_for_service('/gazebo/delete_model')
-    server_funcs.handler_for_gazebo_delete = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+    rospy.loginfo('Create client for {}, please wait a minute...'.format(gazebo_delete_model))
+    rospy.wait_for_service(gazebo_delete_model)
+    server_funcs.handler_for_gazebo_delete = rospy.ServiceProxy(gazebo_delete_model, DeleteModel)
 
     rospy.loginfo('Ready to server')
     rospy.spin()
-
 
 
 class SrvFuncs(object):
@@ -102,9 +109,9 @@ class SrvFuncs(object):
         rospy.loginfo('Server has received request: {}'.format(req.request))
         res_client = CheckPosResponse()
         res_server = DeleteModelResponse()
-        from time import sleep; sleep(3)
+        from time import sleep; sleep(3)  # wait 3 sec
         for key in self.position.keys():
-            obj_xy = self.position.get(key)  # obj_xy = self.__position.get(key)
+            obj_xy = self.position.get(key)
             if (obj_xy[0] - 1) <= self.drone_x <= (obj_xy[0] + 1) and (obj_xy[1] - 1) <= self.drone_y <= (obj_xy[1] + 1):
                 res_client.response = True
                 res_server = self.handler_for_gazebo_delete(key)
