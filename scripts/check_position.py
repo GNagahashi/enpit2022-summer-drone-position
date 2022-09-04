@@ -40,11 +40,20 @@ def main():
 
     # Create instance and register object(prize)
     server_funcs = SrvFuncs()
+    # before
+    # server_funcs.position = dict(
+    #     box1 = (1.5024, 3.92435),
+    #     box2 = (7.9082, 2.42908),
+    #     cylinder1 = (7.62584, 5.74044),
+    #     sphere1 = (2.8558, 1.83817),
+    # )
+    # new
     server_funcs.position = dict(
-        box1 = (1.5024, 3.92435),
-        box2 = (7.9082, 2.42908),
-        cylinder1 = (7.62584, 5.74044),
-        sphere1 = (2.8558, 1.83817),
+        car = (-1.66340595333, 4.0369),
+        chipster = (-0.49655, 3.46187),
+        figure1 = (-1.10845, 2.23614),
+        figure2 = (0.53832, 3.73998),
+        snackbag = (0.889952, 2.21655),
     )
 
     # Create node
