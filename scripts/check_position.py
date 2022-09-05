@@ -39,15 +39,17 @@ def main():
     gazebo_delete_model = '/gazebo/delete_model'
 
     # Create instance and register object(prize)
+    # gazebo (x, y, z) -> program (-y, x, z)
+    # gazebo x -> program y(program y = gazebo x), gazebo y = program x and reverse sign(program x = gazebo -y)
     server_funcs = SrvFuncs()
-    # before
+    # test_world.world
     # server_funcs.position = dict(
     #     box1 = (1.5024, 3.92435),
     #     box2 = (7.9082, 2.42908),
     #     cylinder1 = (7.62584, 5.74044),
     #     sphere1 = (2.8558, 1.83817),
     # )
-    # new
+    # main_world.world
     server_funcs.position = dict(
         car = (-1.66340595333, 4.0369),
         chipster = (-0.49655, 3.46187),
@@ -121,7 +123,7 @@ class SrvFuncs(object):
         from time import sleep; sleep(3)  # wait 3 sec
         for key in self.position.keys():
             obj_xy = self.position.get(key)
-            if (obj_xy[0] - 1) <= self.drone_x <= (obj_xy[0] + 1) and (obj_xy[1] - 1) <= self.drone_y <= (obj_xy[1] + 1):
+            if (obj_xy[0] - 0.5) <= self.drone_x <= (obj_xy[0] + 0.5) and (obj_xy[1] - 0.5) <= self.drone_y <= (obj_xy[1] + 0.5):
                 res_client.response = True
                 res_server = self.handler_for_gazebo_delete(key)
                 break
